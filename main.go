@@ -5,9 +5,24 @@ import (
 	"fin-asg/pkg/domain/message"
 
 	engine "fin-asg/config/gin"
+
 	authrepo "fin-asg/pkg/repository/auth"
 	authhandler "fin-asg/pkg/server/http/handler/auth"
 	authusecase	"fin-asg/pkg/usecase/auth"
+
+	photorepo  "fin-asg/pkg/repository/photo"
+	photohandler "fin-asg/pkg/server/http/handler/photo"
+	photousecase "fin-asg/pkg/usecase/photo"
+
+	commentrepo  "fin-asg/pkg/repository/comment"
+	commenthandler "fin-asg/pkg/server/http/handler/comment"
+	commentusecase "fin-asg/pkg/usecase/comment"
+
+	socialrepo  "fin-asg/pkg/repository/social"
+	socialhandler "fin-asg/pkg/server/http/handler/social"
+	socialusecase "fin-asg/pkg/usecase/social"
+
+
 	userrepo "fin-asg/pkg/repository/user"
 	userhandler "fin-asg/pkg/server/http/handler/user"
 	userusecase "fin-asg/pkg/usecase/user"
@@ -84,17 +99,32 @@ func main() {
 
 		ctx.JSON(http.StatusOK, respStruct)
 	})
-
+	
 	userRepo := userrepo.NewUserRepo(postgresCln)
-	userUsecase := userusecase.NewUserUsecase(userRepo)
-	useHandler := userhandler.NewUserHandler(userUsecase)
+	userUseCase := userusecase.NewUserUsecase(userRepo)
+	useHandler := userhandler.NewUserHandler(userUseCase)
 	v1.NewUserRouter(ginEngine, useHandler).Routers()
 
-
 	authRepo := authrepo.NewAuthRepo(postgresCln)
-	authUsecase := authusecase.NewAuthUsecase(authRepo, userUsecase)
-	authhandler := authhandler.NewAuthHandler(authUsecase)
-	authMiddleware := middleware.NewAuthMiddleware(userUsecase)
+	authUseCase := authusecase.NewAuthUsecase(authRepo, userUseCase)
+	authhandler := authhandler.NewAuthHandler(authUseCase)
+	authMiddleware := middleware.NewAuthMiddleware(userUseCase)
+
+	photoRepo := photorepo.NewPhotoRepo(postgresCln)
+	photoUseCase := photousecase.NewPhotoUsecase(photoRepo, userUseCase)
+	photoHandler := photohandler.NewPhotoHandler(photoUseCase)
+	v1.NewPhotoRouter(ginEngine, photoHandler, authMiddleware).Routers()
+
+	commentRepo := commentrepo.NewCommentRepo(postgresCln)
+	commentUseCase := commentusecase.NewCommentUsecase(commentRepo, photoUseCase)
+	commentHandler := commenthandler.NewCommentHandler(commentUseCase)
+	v1.NewCommentRouter(ginEngine, commentHandler, authMiddleware).Routers()
+
+	socialRepo := socialrepo.NewSocialRepo(postgresCln)
+	socialUseCase := socialusecase.NewSocialUseCase(socialRepo)
+	socialHandler := socialhandler.NewSocialHandler(socialUseCase)
+	v1.NewSocialRouter(ginEngine, socialHandler, authMiddleware).Routers()
+	
 	v1.NewAuthRouter(ginEngine, authhandler, authMiddleware).Routers()
 
 	ginEngine.Serve()

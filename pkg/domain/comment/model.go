@@ -7,6 +7,7 @@ import (
 )
 
 type Comment struct {
+	ID        uint64          `json:"id" gorm:"column:id;primaryKey;autoIncrement"`
 	UserID    uint64          `json:"user_id"`
 	PhotoID   uint64          `json:"photo_id" valid:"required~photo id is required"`
 	Message   string          `gorm:"not null" json:"message" valid:"required~comment message is required"`

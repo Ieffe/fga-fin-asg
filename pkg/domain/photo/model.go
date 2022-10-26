@@ -8,6 +8,7 @@ import (
 )
 
 type Photo struct {
+	ID        uint64            `json:"id" gorm:"primaryKey;autoIncrement"`
 	Title     string            `gorm:"not null" json:"title" valid:"required~photo title is required"`
 	Caption   string            `json:"caption"`
 	Url       string            `gorm:"not null" json:"url" valid:"required~photo url is required,url~invalid url format"`
